@@ -88,9 +88,9 @@ char *dns_lookup(char *addr_host, struct sockaddr_in *addr_con)
 
   
 // make a ping request 
-void send_ping(int ttl, int ping_sockfd, struct sockaddr_in *ping_addr, char *ping_dom, char *ping_ip, char *rev_host) 
+void send_ping(int *ttl, int ping_sockfd, struct sockaddr_in *ping_addr, char *ping_dom, char *ping_ip, char *rev_host) 
 { 
-    int *ttl_val=(int*)ttl;
+    int ttl_val = ttl;
     int msg_count=0, i, addr_len, flag=1, msg_received_count=0; 
       
     struct ping_pkt pckt; 
@@ -168,13 +168,15 @@ void send_ping(int ttl, int ping_sockfd, struct sockaddr_in *ping_addr, char *pi
                 if(!(pckt.hdr.type ==69 && pckt.hdr.code==0))  
                 { 
                     printf("Error..Packet received with ICMP type %d code %d\n",pckt.hdr.type, pckt.hdr.code); 
-                } else if(rtt_msec > (double)ttl_val){
-                    printf("TLE..Packet received from %s (h: %s) (%s) msg_seq=%d ttl=%d rtt = %Lf ms.",ping_dom, rev_host, ping_ip, msg_count, ttl_val, rtt_msec); 
-                    msg_received_count++;
+
                 }
                 else
                 { 
-                    printf("%d bytes from %s (h: %s) (%s) msg_seq=%d ttl=%d rtt = %Lf ms.", PING_PKT_S, ping_dom, rev_host, ping_ip, msg_count, ttl_val, rtt_msec); 
+                    if(rtt_msec > (double)ttl_val)
+                        printf("TLE....Packet from %s (h: %s) (%s) msg_seq=%d ttl=%d rtt = %Lf ms.", PING_PKT_S, ping_dom, rev_host, ping_ip, msg_count, ttl_val, rtt_msec); 
+                    else
+                        printf("%d bytes from %s (h: %s) (%s) msg_seq=%d ttl=%d rtt = %Lf ms.", PING_PKT_S, ping_dom, rev_host, ping_ip, msg_count, ttl_val, rtt_msec); 
+                        
                     msg_received_count++; 
                 }
                 printf("\n%d packets sent, %d packets received, %f percent packet loss. .\n\n\n", msg_count, msg_received_count, ((msg_count - msg_received_count)/msg_count) * 100.0);  
